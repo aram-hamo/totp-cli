@@ -1,0 +1,27 @@
+#!/bin/bash
+
+s_arg=$2
+
+init(){
+  [ -e ~/.local/share/totp-cli ] || mkdir ~/.local/share/totp-cli
+  read -p "GPG Key ID:" GPG_KEY_ID
+  echo "GPG_KEY_ID=$GPG_KEY_ID" > ~/.local/share/totp-cli/config
+}
+
+generate(){
+  echo `pwgen -1` | gpg -e -r $GPG_KEY_ID  > ~/.local/share/totp-cli/$s_arg
+}
+
+if [ ! -e ~/.local/share/totp-cli/config ]; then
+  init
+  exit
+else
+  source ~/.local/share/totp-cli/config
+fi
+
+case $1 in
+  "init")
+    init ;;
+  "generate")
+    generate ;;
+esac
