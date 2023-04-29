@@ -7,7 +7,8 @@ help(){
   \033[32mhelp\033[0m                 show this message
   \033[32minit\033[0m                 initialize the config file
   \033[32mgenerate <account>\033[0m   generate a tokan
-  \033[32mnew <account>\033[0m        create new account"
+  \033[32mnew <account>\033[0m        create new account
+  \033[32mremove <account>\033[0m     to remove a specific account"
   exit
 }
 init(){
@@ -35,6 +36,14 @@ generate(){
   [[ $? != "0" ]] && exit
   oathtool --base32 --totp -d 6 $key
 }
+remove(){
+  [[ $s_arg == "" ]] && help
+  read -p "Are you sure you want to remove this account? [N/y] " confirmation
+  confirmation=`echo $confirmation | tr "[:upper:]" "[:lower:]"`
+  if [[ $confirmation == "y" || $confirmation == "yes" ]]; then
+    rm ~/.local/share/totp-cli/$s_arg
+  fi
+}
 if [ ! -e ~/.local/share/totp-cli/config ]; then
   init
   exit
@@ -49,6 +58,8 @@ case $1 in
     generate ;;
   "new")
     new ;;
+  "remove")
+    remove ;;
   "help")
     help ;;
   *)
