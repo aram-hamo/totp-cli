@@ -2,16 +2,39 @@
 
 s_arg=$2
 
+help(){
+  echo -e "Usage: totp-cli [OPTION]...\n\nOptions
+  \033[32mhelp\033[0m                 show this message
+  \033[32minit\033[0m                 initialize the config file
+  \033[32mgenerate <account>\033[0m   generate a tokan
+  \033[32mnew <account>\033[0m        create new account"
+  exit
+}
 init(){
+  if [ -e ~/.local/share/totp-cli/config ]; then
+    printf "\033[31mError:\033[0m config file already exists\n"
+    exit
+  fi
+
   [ -e ~/.local/share/totp-cli ] || mkdir ~/.local/share/totp-cli
   read -p "GPG Key ID:" GPG_KEY_ID
   echo "GPG_KEY_ID=$GPG_KEY_ID" > ~/.local/share/totp-cli/config
 }
-
-generate(){
-  echo `pwgen -1` | gpg -e -r $GPG_KEY_ID  > ~/.local/share/totp-cli/$s_arg
+new(){
+  [[ $s_arg == "" ]] && help
+  if [ -e ~/.local/share/totp-cli/$s_arg ]; then
+    printf "\033[31mError:\033[0m key exist\n"
+    exit 1;
+  fi
+  echo `pwgen -1 16` | base32 | gpg -e -r $GPG_KEY_ID  > ~/.local/share/totp-cli/$s_arg
+  [ $? == 0 ] && echo key got generated
 }
-
+generate(){
+  [[ $s_arg == "" ]] && help
+  key=`gpg -d ~/.local/share/totp-cli/$s_arg 2> /dev/null`
+  [[ $? != "0" ]] && exit
+  oathtool --base32 --totp -d 6 $key
+}
 if [ ! -e ~/.local/share/totp-cli/config ]; then
   init
   exit
@@ -24,4 +47,10 @@ case $1 in
     init ;;
   "generate")
     generate ;;
+  "new")
+    new ;;
+  "help")
+    help ;;
+  *)
+    help ;;
 esac
