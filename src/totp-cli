@@ -27,14 +27,19 @@ new(){
     printf "\033[31mError:\033[0m key exist\n"
     exit 1;
   fi
-  echo `pwgen -1 16` | sha1sum | gpg -e -r $GPG_KEY_ID  > ~/.local/share/totp-cli/$s_arg
+  read -p "secret key: " key
+  if [[ $key == "" ]]; then
+    echo `pwgen -1 16` | base32 | gpg -e -r $GPG_KEY_ID  > ~/.local/share/totp-cli/$s_arg
+  else
+    echo $key | gpg -e -r $GPG_KEY_ID  > ~/.local/share/totp-cli/$s_arg
+  fi
   [ $? == 0 ] && echo key got generated
 }
 generate(){
   [[ $s_arg == "" ]] && help
   key=`gpg -d ~/.local/share/totp-cli/$s_arg 2> /dev/null |cut -f 1 -d ' '`
   [[ $? != "0" ]] && exit
-  oathtool --totp -d 6 $key
+  oathtool --totp -b -d 6 $key
 }
 remove(){
   [[ $s_arg == "" ]] && help
