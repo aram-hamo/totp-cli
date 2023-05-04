@@ -8,7 +8,8 @@ help(){
   \033[32minit\033[0m                 initialize the config file
   \033[32mgenerate <account>\033[0m   generate a tokan
   \033[32mnew <account>\033[0m        create new account
-  \033[32mremove <account>\033[0m     to remove a specific account"
+  \033[32mremove <account>\033[0m     to remove a specific account
+  \033[32mget-secret <account>\033[0m to get a secret to a specific account"
   exit
 }
 init(){
