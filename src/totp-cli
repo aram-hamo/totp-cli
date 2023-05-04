@@ -29,7 +29,9 @@ new(){
   fi
   read -p "secret key: " key
   if [[ $key == "" ]]; then
-    echo `pwgen -1 16` | base32 | gpg -e -r $GPG_KEY_ID  > ~/.local/share/totp-cli/$s_arg
+    secret=`pwgen -1 16`
+    echo $secret | base32 | gpg -e -r $GPG_KEY_ID  > ~/.local/share/totp-cli/$s_arg
+    echo "secret: $secret"
   else
     echo $key | gpg -e -r $GPG_KEY_ID  > ~/.local/share/totp-cli/$s_arg
   fi
@@ -40,6 +42,11 @@ generate(){
   key=`gpg -d ~/.local/share/totp-cli/$s_arg 2> /dev/null |cut -f 1 -d ' '`
   [[ $? != "0" ]] && exit
   oathtool --totp -b -d 6 $key
+}
+get_secret(){
+  [[ $s_arg == "" ]] && help
+  key=`gpg -d ~/.local/share/totp-cli/$s_arg 2> /dev/null |cut -f 1 -d ' '`
+  echo $key;
 }
 remove(){
   [[ $s_arg == "" ]] && help
@@ -65,6 +72,8 @@ case $1 in
     new ;;
   "remove")
     remove ;;
+  "get-secret")
+    get_secret ;;
   "help")
     help ;;
   *)
