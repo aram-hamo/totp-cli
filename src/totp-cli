@@ -39,18 +39,18 @@ new(){
   [ $? == 0 ] && echo key got generated
 }
 generate(){
-  [[ $s_arg == "" ]] && help
+  [[ $s_arg == "" ]] && s_arg=`ls ~/.local/share/totp-cli/ | fzf`
   key=`gpg -d ~/.local/share/totp-cli/$s_arg 2> /dev/null |cut -f 1 -d ' '`
   [[ $? != "0" ]] && exit
   oathtool --totp -b -d 6 $key
 }
 get_secret(){
-  [[ $s_arg == "" ]] && help
+  [[ $s_arg == "" ]] && s_arg=`ls ~/.local/share/totp-cli/ | fzf`
   key=`gpg -d ~/.local/share/totp-cli/$s_arg 2> /dev/null |cut -f 1 -d ' '`
   echo $key;
 }
 remove(){
-  [[ $s_arg == "" ]] && help
+  [[ $s_arg == "" ]] && s_arg=`ls ~/.local/share/totp-cli/ | fzf`
   read -p "Are you sure you want to remove this account? [N/y] " confirmation
   confirmation=`echo $confirmation | tr "[:upper:]" "[:lower:]"`
   if [[ $confirmation == "y" || $confirmation == "yes" ]]; then
