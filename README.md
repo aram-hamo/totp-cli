@@ -3,19 +3,22 @@
 ## Description
 Command Line application for managing your totp tokans, written in Bash script
 ## Installation
-### Dependencies
+### Arch Linux / Manjaro
+totp-cli is available in the [AUR](https://aur.archlinux.org/packages/totp-cli-git)<br><br>
+### Other Linux Distros
+#### Dependencies
 - gpg
 - make
 - oathtool
-### clone the repo
+#### clone the repo
 ```
 git clone https://github.com/aram-hamo/totp-cli
 ```
-### cd into totp-cli directory
+#### cd into totp-cli directory
 ```
 cd totp-cli
 ```
-### run make
+#### run make
 ```
 make install
 ```
