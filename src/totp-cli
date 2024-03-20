@@ -1,6 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 s_arg=$2
+app_dir=~/.local/share/totp-cli/
+accounts_dir=$app_dir/accounts/
 
 help(){
   echo -e "Usage: totp-cli [OPTION]...\n\nOptions
@@ -13,55 +15,55 @@ help(){
   exit
 }
 init(){
-  if [ -e ~/.local/share/totp-cli/config ]; then
+  if [ -e $app_dir/config ]; then
     printf "\033[31mError:\033[0m config file already exists\n"
     exit
   fi
 
-  [ -e ~/.local/share/totp-cli ] || mkdir ~/.local/share/totp-cli
+  [ -e $accounts_dir ] || mkdir -p $accounts_dir
   read -p "GPG Key ID:" GPG_KEY_ID
-  echo "GPG_KEY_ID=$GPG_KEY_ID" > ~/.local/share/totp-cli/config
+  echo "GPG_KEY_ID=$GPG_KEY_ID" > $app_dir/config
 }
 new(){
   [[ $s_arg == "" ]] && help
-  if [ -e ~/.local/share/totp-cli/$s_arg ]; then
+  if [ -e $accounts_dir/$s_arg ]; then
     printf "\033[31mError:\033[0m key exist\n"
     exit 1;
   fi
   read -p "secret key: " key
   if [[ $key == "" ]]; then
     secret=`pwgen -1 16`
-    echo $secret | base32 | gpg -e -r $GPG_KEY_ID  > ~/.local/share/totp-cli/$s_arg
+    echo $secret | base32 | gpg -e -r $GPG_KEY_ID  > $accounts_dir/$s_arg
     echo "secret: $secret"
   else
-    echo $key | gpg -e -r $GPG_KEY_ID  > ~/.local/share/totp-cli/$s_arg
+    echo $key | gpg -e -r $GPG_KEY_ID  > $accounts_dir/$s_arg
   fi
   [ $? == 0 ] && echo key got generated
 }
 generate(){
-  [[ $s_arg == "" ]] && s_arg=`ls ~/.local/share/totp-cli/ | fzf`
-  key=`gpg -d ~/.local/share/totp-cli/$s_arg 2> /dev/null |cut -f 1 -d ' '`
+  [[ $s_arg == "" ]] && s_arg=`ls $accounts_dir/ | fzf`
+  key=`gpg -d $accounts_dir/$s_arg 2> /dev/null |cut -f 1 -d ' '`
   [[ $? != "0" ]] && exit
   oathtool --totp -b -d 6 $key
 }
 get_secret(){
-  [[ $s_arg == "" ]] && s_arg=`ls ~/.local/share/totp-cli/ | fzf`
-  key=`gpg -d ~/.local/share/totp-cli/$s_arg 2> /dev/null |cut -f 1 -d ' '`
+  [[ $s_arg == "" ]] && s_arg=`ls $accounts_dir/ | fzf`
+  key=`gpg -d $accounts_dir/$s_arg 2> /dev/null |cut -f 1 -d ' '`
   echo $key;
 }
 remove(){
-  [[ $s_arg == "" ]] && s_arg=`ls ~/.local/share/totp-cli/ | fzf`
+  [[ $s_arg == "" ]] && s_arg=`ls $accounts_dir/ | fzf`
   read -p "Are you sure you want to remove this account? [N/y] " confirmation
   confirmation=`echo $confirmation | tr "[:upper:]" "[:lower:]"`
   if [[ $confirmation == "y" || $confirmation == "yes" ]]; then
-    rm ~/.local/share/totp-cli/$s_arg
+    rm $accounts_dir/$s_arg
   fi
 }
-if [ ! -e ~/.local/share/totp-cli/config ]; then
+if [ ! -e $app_dir/config ]; then
   init
   exit
 else
-  source ~/.local/share/totp-cli/config
+  source $app_dir/config
 fi
 
 case $1 in
